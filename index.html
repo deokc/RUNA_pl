@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUNA Playlist</title>
+    <style>
+        :root {
+            --bg-deep: #1a0b2e;
+            --card-bg: rgba(255, 255, 255, 0.1);
+            --magic-pink: #ffb7c5;
+            --magic-gold: #ffe162;
+            --magic-purple: #d1afff;
+            --text-main: #fff;
+            --text-dim: #e2d5f2;
+            --glass-border: rgba(255, 183, 197, 0.3);
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, sans-serif;
+            background-color: var(--bg-deep);
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(255, 183, 197, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(209, 175, 255, 0.15) 0%, transparent 40%),
+                url('https://www.transparenttextures.com/patterns/stardust.png');
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .main-container {
+            display: flex;
+            width: 100%;
+            max-width: 1100px;
+            height: 640px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(30px);
+            border: 2px solid var(--glass-border);
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 183, 197, 0.2);
+            position: relative;
+        }
+
+        .main-container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 6px;
+            background: linear-gradient(90deg, var(--magic-pink), var(--magic-gold), var(--magic-purple), var(--magic-pink));
+            background-size: 300% 100%;
+            animation: moveGradient 5s linear infinite;
+            z-index: 10;
+        }
+
+        @keyframes moveGradient {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        .player-left {
+            flex: 1.2;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-right: 1px solid var(--glass-border);
+            background: radial-gradient(circle at center, rgba(255, 183, 197, 0.05) 0%, transparent 70%);
+        }
+
+        .album-cover {
+            width: 100%;
+            aspect-ratio: 1;
+            max-width: 280px;
+            margin: 0 auto 25px;
+            background: #fff;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 6px solid var(--magic-pink);
+            box-shadow: 0 0 30px rgba(255, 183, 197, 0.4);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .album-cover img { width: 100%; height: 100%; object-fit: cover; }
+
+        .now-playing-info { text-align: center; }
+        .now-playing-info h2 { margin: 0; font-size: 1.6rem; font-weight: 800; text-shadow: 0 0 10px rgba(255, 183, 197, 0.8); }
+        .now-playing-info p { color: var(--magic-gold); margin: 8px 0 10px; font-size: 0.85rem; font-weight: 600; letter-spacing: 2px; }
+        .track-desc { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 25px; font-style: italic; min-height: 2.4em; }
+
+        .progress-area { height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; margin-bottom: 25px; cursor: pointer; position: relative; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--magic-pink), var(--magic-gold)); width: 0%; box-shadow: 0 0 10px var(--magic-pink); border-radius: 10px; }
+        .buttons { display: flex; align-items: center; gap: 25px; justify-content: center; }
+        .btn { background: none; border: none; color: var(--magic-pink); cursor: pointer; font-size: 1.6rem; transition: 0.3s; }
+        .play-btn { font-size: 3rem; color: #fff; filter: drop-shadow(0 0 10px var(--magic-pink)); }
+
+        .playlist-right {
+            flex: 1;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .playlist-header {
+            font-size: 1rem; font-weight: 900; margin-bottom: 20px;
+            color: var(--magic-pink); letter-spacing: 3px; text-align: center;
+            border-bottom: 2px solid var(--glass-border); padding-bottom: 10px;
+        }
+
+        .track-list {
+            list-style: none; padding: 0; margin: 0;
+            overflow-y: auto; flex-grow: 1;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .track-list::-webkit-scrollbar { width: 4px; }
+        .track-list::-webkit-scrollbar-thumb { background: var(--magic-pink); border-radius: 10px; }
+
+        .track-item {
+            display: flex; align-items: center; padding: 12px 15px;
+            border-radius: 15px; cursor: pointer; transition: 0.3s;
+            margin-bottom: 10px; background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+        }
+
+        .track-item.active { background: linear-gradient(90deg, rgba(255, 183, 197, 0.2), rgba(209, 175, 255, 0.2)); border: 1px solid var(--magic-pink); }
+        .track-number { width: 30px; color: var(--magic-gold); font-weight: 800; }
+        .track-title { flex: 1; font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        @media (max-width: 768px) {
+            body { align-items: flex-start; padding: 10px; }
+            .main-container {
+                flex-direction: column;
+                height: auto;
+                border-radius: 25px;
+                max-height: none;
+            }
+            .player-left {
+                border-right: none;
+                border-bottom: 1px solid var(--glass-border);
+                padding: 30px 20px;
+            }
+            .album-cover { max-width: 200px; }
+            .playlist-right {
+                height: 400px;
+                padding: 20px;
+            }
+            .now-playing-info h2 { font-size: 1.4rem; }
+            .buttons { gap: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="player-left">
+        <div class="album-cover">
+            <img src="https://raw.githubusercontent.com/deokc/RUNA_pl/refs/heads/main/luna01.png" id="mainArt">
+        </div>
+        <div class="now-playing-info">
+            <h2 id="displayTitle">곡을 선택해주세요</h2>
+            <p id="displayAlbum">LUNA Playlist</p>
+            <div class="track-desc" id="displayDesc">꿈과 희망의 멜로디... ✨</div>
+        </div>
+        <div class="audio-controls">
+            <div class="progress-area" id="progressContainer">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="buttons">
+                <button class="btn" onclick="prevTrack()">✦</button>
+                <button class="btn play-btn" id="playBtn" onclick="togglePlay()">❤</button>
+                <button class="btn" onclick="nextTrack()">✦</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="playlist-right">
+        <div class="playlist-header">✧ LUNA PLAYLIST ✧</div>
+        <ul class="track-list" id="trackList"></ul>
+    </div>
+</div>
+
+<audio id="mainAudio"></audio>
+
+<script>
+    const playlist = [
+        { 
+            title: "루미나 시티 : Night", 
+            link: "https://raw.githubusercontent.com/deokc/RUNA_pl/main/%EB%A3%A8%EB%AF%B8%EB%82%98%20%EC%8B%9C%ED%8B%B0%20_%20Night_02.mp3", 
+            duration: "03:24", 
+            desc: "마법소녀라는 존재의 세계관을 담아낸 소개곡." 
+        },
+        { 
+            title: "GLASS HEART PROTOCOL", 
+            link: "https://raw.githubusercontent.com/deokc/RUNA_pl/main/GLASS%20HEART%20PROTOCOL_01.mp3", 
+            duration: "03:56", 
+            desc: "점점 자신을 잃어가는 내면을 담아내는 곡." 
+        },
+        { 
+            title: "Don’t Take You Away", 
+            link: "https://raw.githubusercontent.com/deokc/RUNA_pl/main/Don%E2%80%99t%20Take%20You%20Away_03.mp3", 
+            duration: "03:56", 
+            desc: "마법소녀도 사람이야.. 사람.." 
+        },
+        { 
+            title: "별빛 같은 우리", 
+            link: "https://raw.githubusercontent.com/deokc/RUNA_pl/main/%EB%B3%84%EB%B9%9B%20%EA%B0%99%EC%9D%80%20%EC%9A%B0%EB%A6%AC_02.mp3", 
+            duration: "03:17", 
+            desc: "그래도 우리는 괜찮아." 
+        }
+    ];
+
+    const audio = document.getElementById('mainAudio');
+    const trackListElem = document.getElementById('trackList');
+    const playBtn = document.getElementById('playBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressContainer = document.getElementById('progressContainer');
+    const displayTitle = document.getElementById('displayTitle');
+    const displayDesc = document.getElementById('displayDesc');
+
+    let currentIndex = 0;
+
+    function renderPlaylist() {
+        trackListElem.innerHTML = '';
+        playlist.forEach((track, index) => {
+            const li = document.createElement('li');
+            li.className = `track-item ${index === currentIndex ? 'active' : ''}`;
+            li.innerHTML = `
+                <span class="track-number">⭐</span>
+                <span class="track-title">${track.title}</span>
+                <span class="track-duration">${track.duration}</span>
+            `;
+            li.onclick = () => loadTrack(index);
+            trackListElem.appendChild(li);
+        });
+    }
+
+    function loadTrack(index) {
+        currentIndex = index;
+        const track = playlist[index];
+        audio.src = track.link;
+        displayTitle.textContent = track.title;
+        displayDesc.textContent = track.desc;
+        renderPlaylist();
+        audio.play();
+        playBtn.innerHTML = "⏸";
+        
+        const activeItem = trackListElem.querySelector('.active');
+        if (activeItem) {
+            activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function togglePlay() {
+        if (audio.paused) {
+            if (!audio.src) loadTrack(0);
+            else { audio.play(); playBtn.innerHTML = "⏸"; }
+        } else {
+            audio.pause();
+            playBtn.innerHTML = "❤";
+        }
+    }
+
+    function nextTrack() { currentIndex = (currentIndex + 1) % playlist.length; loadTrack(currentIndex); }
+    function prevTrack() { currentIndex = (currentIndex - 1 + playlist.length) % playlist.length; loadTrack(currentIndex); }
+
+    audio.ontimeupdate = () => {
+        if (!isNaN(audio.duration)) {
+            const pct = (audio.currentTime / audio.duration) * 100;
+            progressBar.style.width = pct + "%";
+        }
+    };
+
+    progressContainer.onclick = (e) => {
+        const width = progressContainer.clientWidth;
+        const clickX = e.offsetX;
+        if (!isNaN(audio.duration)) {
+            audio.currentTime = (clickX / width) * audio.duration;
+        }
+    };
+
+    audio.onended = nextTrack;
+    renderPlaylist();
+</script>
+
+</body>
+</html>
